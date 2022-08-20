@@ -1,0 +1,20 @@
+button{
+    padding: 20px;
+    font-size:25px;
+    color:  white;
+    margin-left:20px;
+    background-color:green;
+    border-radius:30px
+  }
+
+  #changeText {
+    padding-left: 20px;
+    font-size:25px;
+    color: red
+  }
+
+  p {
+    padding-left: 20px;
+    font-size:25px;
+    color: black
+  }
