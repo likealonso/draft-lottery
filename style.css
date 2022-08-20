@@ -1,11 +1,13 @@
 button{
+    /* width: 80px; */
     padding: 20px;
     font-size:25px;
     color:  white;
     margin-left:20px;
     background-color:green;
     border-radius:30px
-  }
+}
+
 
   #changeText {
     padding-left: 20px;
@@ -17,4 +19,31 @@ button{
     padding-left: 20px;
     font-size:25px;
     color: black
+  }
+  body{
+    background-image: url('https://i.imgur.com/bSpwYHH.jpg'); 
+    background-size:1400px 1300px; 
+    background-repeat: no-repeat
+  }
+  
+
+  @media (max-width: 600px) {
+    /* Styles for specific screen resolutions */
+    h2 {
+      width:190px
+    }
+    button{
+      width:80px;
+      font-size: 15px
+    }
+    #changeText {
+      padding-left: 10px;
+      font-size:15px;
+    }
+    p{
+      font-size:15px;
+    }
+    body{
+      background-size:600px 650px;
+    }
   }

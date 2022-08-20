@@ -45,7 +45,7 @@ function shuffle(array) {
 
 // Used like so
 function doit() {
-    document.body.setAttribute("style", "")
+    document.querySelector('body').style.backgroundImage="none"
     members = shuffle(members);
     var text = ['Gilbert', 'Eddie', 'Victor', 'Oscar', 'Mike', 'Eric', 'Rudy', 'Lawrence', 'Fernando', 'Alonso'];
     var counter = 0;
