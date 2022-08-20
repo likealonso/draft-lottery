@@ -59,7 +59,7 @@ function doit() {
             counter = 0;
             if(new Date().getTime() - startTime > 74000){
                 clearInterval(inst);
-                document.getElementById("changeText").innerHTML = Object.keys(members[0]).toString().split(",")[0] + ", CONGRATULATIONS!"
+                document.getElementById("changeText").innerHTML = Object.keys(members[0]).toString().split(",")[0] + ", CONGRATS!"
                 // document.getElementById("parent").appendChild(document.createElement('p').appendChild(document.createTextNode("Hllo")))
                 for (i=0; i<10; i++){
                     // console.log(i)
