@@ -47,7 +47,7 @@ function shuffle(array) {
 function doit() {
     document.querySelector('body').style.backgroundImage="none"
     members = shuffle(members);
-    var text = ['Gilbert', 'Eddie', 'Victor', 'Oscar', 'Mike', 'Eric', 'Rudy', 'Lawrence', 'Fernando', 'Alonso'];
+    var text = ['Gilbert', 'Eddie', 'Victor', 'Oscar', 'Mike', 'Eric', 'Rudy', 'Lawrence', 'Kevin', 'Alonso'];
     var counter = 0;
     var elem = document.getElementById("changeText");
     var inst = setInterval(change, 300);
