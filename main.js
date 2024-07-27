@@ -1,14 +1,14 @@
 var members = [
     {'Rudy, RAAAIIIIIDEEEERRSSS':"https://i.imgur.com/TBaaa0L.png"}, 
-    {"Alonso, Life is good when you're defending champ":"https://i.imgur.com/dZe7jRE.png"}, 
-    {'Gilbert, Looking to snap that sacko streak':"https://i.imgur.com/cFyTT0F.png"}, 
-    {'Victor, All hail the new commish':"https://i.imgur.com/bZUJexR.png"}, 
-    {'Eddie, Is he here?':"https://i.imgur.com/19zAiTs.png"}, 
-    {'Eric, Gold-blooded man needs a championship':"https://i.imgur.com/ElWxeln.png"}, 
-    {'Mike, Welcome to the league!':"https://i.imgur.com/IS7rP8I.png"}, 
-    {'Oscar, This Gyu place better be good':"https://i.imgur.com/eWoCvCT.png"}, 
-    {'Lawrence, Welcome back after a hiatus':"https://i.imgur.com/BSmpuBv.png"}, 
-    {"Fernando, What's up, bro!?":"https://i.imgur.com/0RODsQD.png"}
+    {"Alonso, Hungry for a third title":"https://i.imgur.com/dZe7jRE.png"}, 
+    {'Gilbert, Not allowed to pick Rams or Chargers':"https://i.imgur.com/cFyTT0F.png"}, 
+    {'Victor, Holy shit':"https://i.imgur.com/bZUJexR.png"}, 
+    {'Eddie, Set your lineup':"https://i.imgur.com/19zAiTs.png"}, 
+    {'Eric, Gold-blooded still looking for first title':"https://i.imgur.com/ElWxeln.png"}, 
+    {'Mike, Defending champ in the house':"https://i.imgur.com/IS7rP8I.png"}, 
+    {'Oscar, What sexy team will you pick this year?':"https://i.imgur.com/eWoCvCT.png"}, 
+    {'Lawrence, Got a picture':"https://i.imgur.com/jtCKlJ3.png"}, 
+    {"Kevin, Welcome to the league!":"https://i.imgur.com/MA4oU0L.png"}
 ]
 
 function shuffle(array) {
