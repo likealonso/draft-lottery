@@ -22,8 +22,13 @@ button{
   }
   body{
     background-image: url('https://i.imgur.com/f7DnkeG.png'); 
-    background-size:1400px 1300px; 
+    background-size:cover; 
     background-repeat: no-repeat
+  }
+  h2{
+    background-color: white;
+    padding:5px;
+    border: 2px solid green;
   }
   
 
