@@ -1,0 +1,154 @@
+:root {
+  color: #17201a;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: #f6f3ec;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  padding: 14px 18px;
+  color: white;
+  font: inherit;
+  font-weight: 800;
+  background: #117533;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.app {
+  min-height: 100vh;
+  padding: 24px;
+  background:
+    linear-gradient(90deg, rgba(246, 243, 236, 0.92), rgba(246, 243, 236, 0.68)),
+    url('https://i.imgur.com/f7DnkeG.png') center / cover no-repeat;
+}
+
+.app--active {
+  background: #f6f3ec;
+}
+
+.intro {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  max-width: 1180px;
+  margin: 0 auto 28px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #117533;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: #117533;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  max-width: 680px;
+  margin-bottom: 0;
+  font-size: clamp(2rem, 6vw, 5rem);
+  line-height: 0.95;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: min(100%, 310px);
+}
+
+.ticker {
+  min-width: 130px;
+  margin: 0;
+  color: #c51f2b;
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.pick-card {
+  overflow: hidden;
+  border: 2px solid #17201a;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 10px 0 #117533;
+}
+
+.pick-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-bottom: 2px solid #17201a;
+}
+
+.pick-card h2 {
+  margin: 12px 14px 4px;
+  font-size: 1.45rem;
+}
+
+.pick-card p {
+  margin-right: 14px;
+  margin-left: 14px;
+}
+
+.pick-number {
+  margin: 14px;
+  color: #117533;
+  font-size: 0.85rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+@media (max-width: 680px) {
+  .app {
+    padding: 16px;
+  }
+
+  .intro,
+  .actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .actions {
+    width: 100%;
+  }
+
+  button {
+    width: 100%;
+  }
+}
