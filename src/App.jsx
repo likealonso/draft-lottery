@@ -1,9 +1,22 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import cms from './cms.js';
 import members from './members.js';
 
-const pickRevealDelay = 5000;
-const tickerDelay = 300;
-const tickerNames = members.map((member) => member.name);
+const { copy, password, timing } = cms;
+
+function getRandomIndex(length, currentIndex = -1) {
+  if (length <= 1) {
+    return 0;
+  }
+
+  let nextIndex = Math.floor(Math.random() * length);
+
+  while (nextIndex === currentIndex) {
+    nextIndex = Math.floor(Math.random() * length);
+  }
+
+  return nextIndex;
+}
 
 function shuffle(items) {
   const shuffled = [...items];
@@ -20,11 +33,17 @@ function shuffle(items) {
 }
 
 function App() {
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [draftOrder, setDraftOrder] = useState([]);
   const [revealedCount, setRevealedCount] = useState(0);
   const [tickerIndex, setTickerIndex] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [matchedReveal, setMatchedReveal] = useState(null);
+  const [matchedNames, setMatchedNames] = useState([]);
   const timeoutsRef = useRef([]);
+  const matchTimeoutRef = useRef(null);
 
   const revealedPicks = useMemo(
     () =>
@@ -38,43 +57,79 @@ function App() {
   );
 
   const winner = revealedCount === members.length ? draftOrder[0] : null;
+  const tickerPool = useMemo(() => {
+    if (winner) {
+      return [winner];
+    }
+
+    if (draftOrder.length === members.length) {
+      return draftOrder.slice(0, members.length - revealedCount);
+    }
+
+    return members;
+  }, [draftOrder, revealedCount, winner]);
+  const tickerMember = tickerPool[tickerIndex % tickerPool.length] || members[0];
+  const displayedTickerMember = matchedReveal || tickerMember;
 
   useEffect(() => {
-    if (!isRunning) {
+    if (!isRunning || tickerPool.length === 0) {
       return undefined;
     }
 
     const ticker = window.setInterval(() => {
-      setTickerIndex((current) => (current + 1) % tickerNames.length);
-    }, tickerDelay);
+      setTickerIndex((current) => getRandomIndex(tickerPool.length, current));
+    }, timing.tickerDelay);
 
     return () => window.clearInterval(ticker);
-  }, [isRunning]);
+  }, [isRunning, tickerPool.length]);
 
   useEffect(() => {
     return () => {
       timeoutsRef.current.forEach(window.clearTimeout);
+      window.clearTimeout(matchTimeoutRef.current);
     };
   }, []);
 
   function startLottery() {
     timeoutsRef.current.forEach(window.clearTimeout);
+    window.clearTimeout(matchTimeoutRef.current);
     timeoutsRef.current = [];
+    matchTimeoutRef.current = null;
 
     const newOrder = shuffle(members);
     setDraftOrder(newOrder);
     setRevealedCount(0);
-    setTickerIndex(0);
+    setTickerIndex(getRandomIndex(newOrder.length));
+    setMatchedReveal(null);
+    setMatchedNames([]);
     setIsRunning(true);
 
-    for (let pick = members.length; pick >= 1; pick -= 1) {
-      const delay = (members.length - pick + 1) * pickRevealDelay;
+    for (let pick = members.length; pick >= 2; pick -= 1) {
+      const delay = (members.length - pick + 1) * timing.pickRevealDelay;
       const timeout = window.setTimeout(() => {
-        setRevealedCount((current) =>
-          Math.max(current, members.length - pick + 1),
-        );
+        const nextRevealedCount =
+          pick === 2 ? members.length : members.length - pick + 1;
+        const newReveals = pick === 2 ? newOrder.slice(0, 2) : [newOrder[pick - 1]];
+        const featuredReveal = pick === 2 ? newOrder[0] : newReveals[0];
 
-        if (pick === 1) {
+        setRevealedCount((current) =>
+          Math.max(current, nextRevealedCount),
+        );
+        setMatchedReveal(featuredReveal);
+        setMatchedNames((current) => [
+          ...new Set([
+            ...current,
+            ...newReveals.map((member) => member.name),
+          ]),
+        ]);
+
+        window.clearTimeout(matchTimeoutRef.current);
+        matchTimeoutRef.current = window.setTimeout(() => {
+          setMatchedReveal(null);
+          matchTimeoutRef.current = null;
+        }, timing.revealMatchDuration);
+
+        if (pick === 2) {
           setIsRunning(false);
         }
       }, delay);
@@ -83,38 +138,105 @@ function App() {
     }
   }
 
+  function unlockDraft(event) {
+    event.preventDefault();
+
+    if (passwordInput.trim() === password) {
+      setIsUnlocked(true);
+      setPasswordError('');
+      return;
+    }
+
+    setPasswordError(copy.passwordError);
+  }
+
+  if (!isUnlocked) {
+    return (
+      <main className="app app--gate">
+        <section className="gate">
+          <p className="eyebrow">{copy.leagueName}</p>
+          <h1>{copy.title}</h1>
+          <form className="gate-form" onSubmit={unlockDraft}>
+            <label htmlFor="draft-password">{copy.passwordLabel}</label>
+            <input
+              id="draft-password"
+              type="password"
+              value={passwordInput}
+              onChange={(event) => {
+                setPasswordInput(event.target.value);
+                setPasswordError('');
+              }}
+              autoComplete="off"
+            />
+            <button type="submit">{copy.unlockButton}</button>
+            {passwordError && (
+              <p className="gate-error" role="alert">
+                {passwordError}
+              </p>
+            )}
+          </form>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className={revealedPicks.length > 0 ? 'app app--active' : 'app'}>
       <section className="intro">
         <div>
-          <p className="eyebrow">Friends and Rudy League</p>
-          <h1>Draft Order Lottery</h1>
+          <p className="eyebrow">{copy.leagueName}</p>
+          <h1>{copy.title}</h1>
         </div>
 
         <div className="actions">
           <button type="button" onClick={startLottery} disabled={isRunning}>
-            {isRunning ? 'Drawing...' : 'Draft order'}
+            {isRunning ? copy.drawingButton : copy.draftButton}
           </button>
-          <p className="ticker" aria-live="polite">
-            {winner ? `${winner.name}, CONGRATS!` : tickerNames[tickerIndex]}
-          </p>
+          <div
+            className={matchedReveal ? 'ticker ticker--match' : 'ticker'}
+            aria-live="polite"
+          >
+            <div className="ticker-frame">
+              <img
+                src={displayedTickerMember.image}
+                alt={displayedTickerMember.name}
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <p>
+              {winner && !matchedReveal
+                ? `${winner.name}, ${copy.winnerSuffix}`
+                : displayedTickerMember.name}
+            </p>
+          </div>
         </div>
       </section>
 
       {revealedPicks.length > 0 && (
-        <section className="results" aria-label="Draft order results">
-          {revealedPicks.map(({ member, pickNumber }) => (
-            <article className="pick-card" key={member.name}>
-              <p className="pick-number">Pick {pickNumber}</p>
-              <img
-                src={member.image}
-                alt={member.name}
-                referrerPolicy="no-referrer"
-              />
-              <h2>{member.name}</h2>
-              <p>{member.tagline}</p>
-            </article>
-          ))}
+        <section className="results" aria-label={copy.resultsLabel}>
+          {revealedPicks.map(({ member, pickNumber }) => {
+            const cardClasses = [
+              'pick-card',
+              matchedNames.includes(member.name) ? 'pick-card--matched' : '',
+              pickNumber <= 2 ? 'pick-card--spotlight' : '',
+              pickNumber === 1 ? 'pick-card--winner' : '',
+            ]
+              .filter(Boolean)
+              .join(' ');
+
+            return (
+              <article className={cardClasses} key={member.name}>
+                <p className="pick-number">Pick {pickNumber}</p>
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  referrerPolicy="no-referrer"
+                />
+                <h2>{member.name}</h2>
+                <p>{member.tagline}</p>
+              </article>
+            );
+          })}
         </section>
       )}
     </main>
