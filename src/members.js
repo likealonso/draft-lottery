@@ -42,9 +42,9 @@ const members = [
     image: `${basePath}Oscar.png`,
   },
   {
-    name: 'Quique1111',
-    tagline: 'Get a picture',
-    image: `${basePath}question.png`,
+    name: 'Pedro',
+    tagline: 'Welcome to the league!',
+    image: `${basePath}pedro.png`,
   },
   {
     name: 'Kevin',
