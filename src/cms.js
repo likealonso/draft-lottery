@@ -12,9 +12,15 @@ const cms = {
     unlockButton: 'Enter draft',
     draftButton: 'Draft order',
     drawingButton: 'Drawing...',
+    pauseButton: 'Pause',
+    resumeButton: 'Resume',
+    resetButton: 'Reset',
     passwordError: 'Wrong password',
     winnerSuffix: 'CONGRATS!',
     resultsLabel: 'Draft order results',
+    participantsTitle: "Today's participants (in alphabetical order):",
+    participantsAriaLabel: 'Participants',
+    pickLabel: 'Pick',
   },
 };
 

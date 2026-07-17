@@ -40,10 +40,15 @@ function App() {
   const [revealedCount, setRevealedCount] = useState(0);
   const [tickerIndex, setTickerIndex] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const [hasStartedDraft, setHasStartedDraft] = useState(false);
   const [matchedReveal, setMatchedReveal] = useState(null);
   const [matchedNames, setMatchedNames] = useState([]);
   const timeoutsRef = useRef([]);
   const matchTimeoutRef = useRef(null);
+  const revealQueueRef = useRef([]);
+  const revealIndexRef = useRef(0);
+  const revealStartedAtRef = useRef(null);
 
   const revealedPicks = useMemo(
     () =>
@@ -56,6 +61,12 @@ function App() {
     [draftOrder, revealedCount],
   );
 
+  const sortedMembers = useMemo(
+    () => [...members].sort((a, b) => a.name.localeCompare(b.name)),
+    [],
+  );
+  const topParticipants = sortedMembers.slice(0, 5);
+  const bottomParticipants = sortedMembers.slice(5);
   const winner = revealedCount === members.length ? draftOrder[0] : null;
   const tickerPool = useMemo(() => {
     if (winner) {
@@ -90,52 +101,128 @@ function App() {
     };
   }, []);
 
-  function startLottery() {
+  function clearDraftTimers() {
     timeoutsRef.current.forEach(window.clearTimeout);
     window.clearTimeout(matchTimeoutRef.current);
     timeoutsRef.current = [];
     matchTimeoutRef.current = null;
+  }
+
+  function resetDraft() {
+    clearDraftTimers();
+    revealQueueRef.current = [];
+    revealIndexRef.current = 0;
+    revealStartedAtRef.current = null;
+    setDraftOrder([]);
+    setRevealedCount(0);
+    setTickerIndex(0);
+    setMatchedReveal(null);
+    setMatchedNames([]);
+    setIsRunning(false);
+    setIsPaused(false);
+    setHasStartedDraft(false);
+  }
+
+  function revealNextPick(newOrder) {
+    const nextReveal = revealQueueRef.current[revealIndexRef.current];
+
+    if (!nextReveal) {
+      setIsRunning(false);
+      setIsPaused(false);
+      revealStartedAtRef.current = null;
+      return;
+    }
+
+    const delay = Math.max(0, nextReveal.remainingMs);
+    const timeout = window.setTimeout(() => {
+      const nextRevealedCount =
+        nextReveal.pick === 2 ? members.length : members.length - nextReveal.pick + 1;
+      const newReveals =
+        nextReveal.pick === 2 ? newOrder.slice(0, 2) : [newOrder[nextReveal.pick - 1]];
+      const featuredReveal =
+        nextReveal.pick === 2 ? newOrder[0] : newReveals[0];
+
+      setRevealedCount((current) => Math.max(current, nextRevealedCount));
+      setMatchedReveal(featuredReveal);
+      setMatchedNames((current) => [
+        ...new Set([
+          ...current,
+          ...newReveals.map((member) => member.name),
+        ]),
+      ]);
+
+      window.clearTimeout(matchTimeoutRef.current);
+      matchTimeoutRef.current = window.setTimeout(() => {
+        setMatchedReveal(null);
+        matchTimeoutRef.current = null;
+      }, timing.revealMatchDuration);
+
+      revealIndexRef.current += 1;
+
+      if (nextReveal.pick === 2) {
+        setIsRunning(false);
+        setIsPaused(false);
+        revealStartedAtRef.current = null;
+        return;
+      }
+
+      revealNextPick(newOrder);
+    }, delay);
+
+    timeoutsRef.current.push(timeout);
+    revealStartedAtRef.current = Date.now();
+  }
+
+  function startLottery() {
+    clearDraftTimers();
 
     const newOrder = shuffle(members);
+    revealQueueRef.current = Array.from({ length: members.length - 1 }, (_, index) => {
+      const pick = members.length - index;
+
+      return {
+        pick,
+        remainingMs: timing.pickRevealDelay,
+      };
+    }).filter((item) => item.pick >= 2);
+    revealIndexRef.current = 0;
+    revealStartedAtRef.current = null;
+
+    setHasStartedDraft(true);
     setDraftOrder(newOrder);
     setRevealedCount(0);
     setTickerIndex(getRandomIndex(newOrder.length));
     setMatchedReveal(null);
     setMatchedNames([]);
     setIsRunning(true);
+    setIsPaused(false);
 
-    for (let pick = members.length; pick >= 2; pick -= 1) {
-      const delay = (members.length - pick + 1) * timing.pickRevealDelay;
-      const timeout = window.setTimeout(() => {
-        const nextRevealedCount =
-          pick === 2 ? members.length : members.length - pick + 1;
-        const newReveals = pick === 2 ? newOrder.slice(0, 2) : [newOrder[pick - 1]];
-        const featuredReveal = pick === 2 ? newOrder[0] : newReveals[0];
+    revealNextPick(newOrder);
+  }
 
-        setRevealedCount((current) =>
-          Math.max(current, nextRevealedCount),
-        );
-        setMatchedReveal(featuredReveal);
-        setMatchedNames((current) => [
-          ...new Set([
-            ...current,
-            ...newReveals.map((member) => member.name),
-          ]),
-        ]);
-
-        window.clearTimeout(matchTimeoutRef.current);
-        matchTimeoutRef.current = window.setTimeout(() => {
-          setMatchedReveal(null);
-          matchTimeoutRef.current = null;
-        }, timing.revealMatchDuration);
-
-        if (pick === 2) {
-          setIsRunning(false);
-        }
-      }, delay);
-
-      timeoutsRef.current.push(timeout);
+  function togglePauseDraft() {
+    if (!hasStartedDraft) {
+      return;
     }
+
+    if (isPaused) {
+      setIsPaused(false);
+      setIsRunning(true);
+      revealNextPick(draftOrder);
+      return;
+    }
+
+    if (revealStartedAtRef.current && revealQueueRef.current[revealIndexRef.current]) {
+      const elapsed = Date.now() - revealStartedAtRef.current;
+      revealQueueRef.current[revealIndexRef.current].remainingMs = Math.max(
+        0,
+        revealQueueRef.current[revealIndexRef.current].remainingMs - elapsed,
+      );
+    }
+
+    clearDraftTimers();
+    setIsRunning(false);
+    setIsPaused(true);
   }
 
   function unlockDraft(event) {
@@ -156,6 +243,16 @@ function App() {
         <section className="gate">
           <p className="eyebrow">{copy.leagueName}</p>
           <h1>{copy.title}</h1>
+          <div className="gate-photos" aria-label="Participants preview">
+            {members.map((member) => (
+              <img
+                key={member.name}
+                src={member.image}
+                alt={member.name}
+                referrerPolicy="no-referrer"
+              />
+            ))}
+          </div>
           <form className="gate-form" onSubmit={unlockDraft}>
             <label htmlFor="draft-password">{copy.passwordLabel}</label>
             <input
@@ -189,9 +286,26 @@ function App() {
         </div>
 
         <div className="actions">
-          <button type="button" onClick={startLottery} disabled={isRunning}>
-            {isRunning ? copy.drawingButton : copy.draftButton}
-          </button>
+          <div className="action-buttons">
+            <button
+              type="button"
+              onClick={isPaused ? resetDraft : startLottery}
+              disabled={isRunning}
+            >
+              {isPaused
+                ? copy.resetButton
+                : isRunning
+                  ? copy.drawingButton
+                  : copy.draftButton}
+            </button>
+            <button
+              type="button"
+              onClick={togglePauseDraft}
+              disabled={!hasStartedDraft || (!isRunning && !isPaused)}
+            >
+              {isPaused ? copy.resumeButton : copy.pauseButton}
+            </button>
+          </div>
           <div
             className={matchedReveal ? 'ticker ticker--match' : 'ticker'}
             aria-live="polite"
@@ -212,7 +326,40 @@ function App() {
         </div>
       </section>
 
-      {revealedPicks.length > 0 && (
+      {!hasStartedDraft && (
+        <section className="participants" aria-label="Participants">
+          <h2 className="participants-title">Today's participants (in alphabetical order)</h2>
+          <div className="participants-row">
+            {topParticipants.map((member) => (
+              <article className="participant-card" key={member.name}>
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  referrerPolicy="no-referrer"
+                />
+                <h2>{member.name}</h2>
+                <p>{member.tagline}</p>
+              </article>
+            ))}
+          </div>
+
+          <div className="participants-row participants-row--bottom">
+            {bottomParticipants.map((member) => (
+              <article className="participant-card" key={member.name}>
+                <img
+                  src={member.image}
+                  alt={member.name}
+                  referrerPolicy="no-referrer"
+                />
+                <h2>{member.name}</h2>
+                <p>{member.tagline}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {hasStartedDraft && revealedPicks.length > 0 && (
         <section className="results" aria-label={copy.resultsLabel}>
           {revealedPicks.map(({ member, pickNumber }) => {
             const cardClasses = [
