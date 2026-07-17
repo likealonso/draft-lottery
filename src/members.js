@@ -1,53 +1,55 @@
+const basePath = `${import.meta.env.BASE_URL}images/`;
+
 const members = [
   {
     name: 'Rudy',
     tagline: 'RAAAIIIIIDEEEERRSSS',
-    image: '/images/rudy.png',
+    image: `${basePath}rudy.png`,
   },
   {
     name: 'Alonso',
     tagline: 'Hungry for a third title',
-    image: '/images/alonso.png',
+    image: `${basePath}alonso.png`,
   },
   {
     name: 'Gilbert',
     tagline: 'Not allowed to pick Rams or Chargers',
-    image: '/images/gilbert.png',
+    image: `${basePath}gilbert.png`,
   },
   {
     name: 'Victor',
     tagline: 'Defending champ!',
-    image: '/images/victor.png',
+    image: `${basePath}victor.png`,
   },
   {
     name: 'Alvaro',
     tagline: "Let's go Chargers",
-    image: '/images/alvaro.png',
+    image: `${basePath}alvaro.png`,
   },
   {
     name: 'Eric',
     tagline: 'Gold-blooded still looking for first title',
-    image: '/images/Eric.png',
+    image: `${basePath}Eric.png`,
   },
   {
     name: 'Mike',
     tagline: 'He likes his Broncos',
-    image: '/images/Mike.png',
+    image: `${basePath}Mike.png`,
   },
   {
     name: 'Oscar',
     tagline: 'What sexy team will you pick this year?',
-    image: '/images/Oscar.png',
+    image: `${basePath}Oscar.png`,
   },
   {
     name: 'Quique1111',
     tagline: 'Get a picture',
-    image: '/images/question.png',
+    image: `${basePath}question.png`,
   },
   {
     name: 'Kevin',
     tagline: 'Going for that first title',
-    image: '/images/kevin.png',
+    image: `${basePath}kevin.png`,
   },
 ];
 
